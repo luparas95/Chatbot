@@ -1,4 +1,4 @@
-import sqlite3
+"""import sqlite3
 from os import path, getcwd
 from spacy import load
 
@@ -12,16 +12,16 @@ cursor.execute('SELECT * FROM Language WHERE Name = ?', ("spanish",))
 rows = cursor.fetchall()
 
 
-print(rows)
+print(rows)"""
 
-"""
+
 import spacy
 
 # Texto de entrada
-text = "Muestra el camino para ir a la salida"
+text = "print User super_admin"
 
 # carga el paquete con las palabras del diccionario
-nlp = spacy.load("es_core_news_lg")
+nlp = spacy.load("en_core_web_lg")
 
 # Procesa el texto de entrada
 doc = nlp(text)
@@ -33,7 +33,7 @@ for token in doc:
     token_dep = token.dep_
 
     print("{:<12}{:<10}{:<10}".format(token_text, token_pos, token_dep))
-"""
+
 
 """
 from werkzeug.security import generate_password_hash, check_password_hash

@@ -177,7 +177,7 @@ class ArtistInfo:
         artist = get_obj_artist(db, self.get_artist(), True)
         language = get_obj_language(db, self.get_language(), True)
 
-        print(OBJET_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Artist: " + artist.get_name() + " " + artist.get_last_name())
         print("Language: " + language.get_name())
         print("Description: " + self.get_description())

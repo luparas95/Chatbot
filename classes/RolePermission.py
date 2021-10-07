@@ -159,6 +159,6 @@ class RolePermission:
         role = get_obj_role(db, self.get_role(), True)
         permission = get_obj_permission(db, self.get_permission(), True)
 
-        print(OBJET_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Role: " + role.get_name())
         print("Permission: " + permission.get_name())

@@ -179,7 +179,7 @@ class ArtworkInfo:
         artwork = get_obj_artwork(db, self.get_artwork(), True)
         language = get_obj_language(db, self.get_language(), True)
 
-        print(OBJET_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Artwork: " + artwork.get_name())
         print("Language: " + language.get_name())
         print("Description: " + self.get_description())

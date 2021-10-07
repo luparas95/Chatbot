@@ -126,5 +126,5 @@ class Role:
             self.set_message("The user does not have permission to delete records from " + TABLE_NAME + " table.")
 
     def print(self):
-        print(OBJET_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Name: " + self.get_name())

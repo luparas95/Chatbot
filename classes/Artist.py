@@ -14,7 +14,7 @@ def get_obj(db, value, by_id=False):
     if by_id:
         data = db.execute('SELECT * FROM Artist WHERE Id = ?', (value,), True)
     else:
-        data = db.execute('SELECT * FROM Artist WHERE Name = ? AND LastName = ?', (value[0], value[1]), True)
+        data = db.execute('SELECT * FROM Artist WHERE LastName = ?', (value,), True)
 
     if data is None:
         return None
@@ -71,7 +71,7 @@ def srch_by_last_name(db, nlp, value):
 
     for row in rows:
         doc = nlp(row[2].lower())
-        if str(doc[-1]) == value:
+        if str(doc[-1]) is value:
             obj = Artist(
                 row[1],
                 row[2],
@@ -196,9 +196,7 @@ class Artist:
     def __is_valid(self, db):
         self.set_message('')
         artist = get_obj(db, self.get_id(), True)
-        if not artist.__exist(db) or (artist.__exist(db) and
-                                      (artist.get_name() != self.get_name() or
-                                       artist.get_last_name() != self.get_last_name())):
+        if not artist.__exist(db) or (artist.__exist(db) and artist.get_last_name() != self.get_last_name()):
             self.__validate_name()
             self.__validate_last_name()
             if self.__exist(db):
@@ -264,7 +262,7 @@ class Artist:
     def print(self, db):
         nationality = get_obj_nationality(db, self.get_nationality(), True)
 
-        print(OBJECT_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Name: " + self.get_name())
         print("Last name: " + self.get_last_name())
         print("Born date: " + self.get_born_date())

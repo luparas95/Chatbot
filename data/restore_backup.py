@@ -114,7 +114,7 @@ def generate_artist(cursor):
         InsertDate DATETIME NOT NULL,
         UpdateUserId INTEGER NOT NULL,
         UpdateDate DATETIME NOT NULL,
-        UNIQUE ("Name", LastName),
+        UNIQUE (LastName),
         FOREIGN KEY (NationalityId) REFERENCES Nationality(Id) ON DELETE CASCADE,
         FOREIGN KEY (InsertUserId) REFERENCES "User"(Id) ON DELETE CASCADE,
         FOREIGN KEY (UpdateUserId) REFERENCES "User"(Id) ON DELETE CASCADE)

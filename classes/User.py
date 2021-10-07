@@ -40,24 +40,6 @@ def get_all_rows(db):
     return db.get_all_rows('SELECT * FROM User')
 
 
-def login(db, nick, password):
-    data = db.execute('SELECT * FROM User WHERE Nick = ? AND Password = ?', (nick, password,), True)
-
-    if data is None:
-        return None
-
-    obj = User(
-        data[1],
-        data[2],
-        data[3],
-        data[4],
-        data[5],
-    )
-    obj.set_id(data[0])
-
-    return obj
-
-
 class User:
 
     def __init__(self, nick, password, name, last_name, role):
@@ -217,7 +199,7 @@ class User:
 
     def delete(self, db, user):
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
-            if user.get_id() != self.get_id():
+            if user.get_id() is not self.get_id():
                 if self.__exist(db):
                     db.execute('DELETE FROM User WHERE Id = ?', self.get_id())
                     self.set_message(OBJECT_NAME + " deleted.")
@@ -231,7 +213,7 @@ class User:
     def print(self, db):
         role = get_obj_role(db, self.get_role(), True)
 
-        print(OBJECT_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Nick: " + self.get_nick())
         print("Name: " + self.get_name())
         print("Last name: " + self.get_last_name())

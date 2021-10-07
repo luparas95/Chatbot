@@ -38,13 +38,25 @@ def search_in_patterns(db, nlp, keys, language):
                 {"LOWER": {"IN": get_artwork_name_list(db, nlp)}}
             ],
 
-            "show": [
+            "show_map": [
                 {"LOWER": {"IN": search_in_dict(db, ["show", "show"], "English")}},
                 {"POS": "PRON", "OP": "?"},
                 {"POS": "DET", "OP": "?"},
                 {"POS": "NOUN", "OP": "?"},
                 {"LOWER": {"IN": search_in_dict(db, ["show", "map"], "English")}}
             ],
+
+            "login": [
+                {"LOWER": {"IN": ["login", "login"]}}
+            ],
+
+            "logout": [
+                {"LOWER": {"IN": ["log-out", "logout"]}}
+            ],
+
+            "show_row": [
+                {"LOWER": {"IN": search_in_dict(db, ["show", "show"], "English")}}
+            ]
         },
 
         "Spanish": {
@@ -73,7 +85,7 @@ def search_in_patterns(db, nlp, keys, language):
                 {"LOWER": {"IN": get_artwork_name_list(db, nlp)}}
             ],
 
-            "show": [
+            "show_map": [
                 {"LOWER": {"IN": search_in_dict(db, ["show", "show"], "Spanish")}},
                 {"POS": "DET", "OP": "?"},
                 {"LOWER": {"IN": search_in_dict(db, ["show", "map"], "Spanish")}}
@@ -106,7 +118,7 @@ def search_in_patterns(db, nlp, keys, language):
                 {"LOWER": {"IN": get_artwork_name_list(db, nlp)}}
             ],
 
-            "show": [
+            "show_map": [
                 {"LOWER": {"IN": search_in_dict(db, ["show", "show"], "Portuguese")}},
                 {"POS": "DET", "OP": "?"},
                 {"LOWER": {"IN": search_in_dict(db, ["show", "map"], "Portuguese")}}

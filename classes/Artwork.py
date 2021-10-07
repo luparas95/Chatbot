@@ -53,7 +53,7 @@ def srch_by_name(db, nlp, value):
 
     for row in rows:
         doc = nlp(row[1].lower())
-        if str(doc[-1]) == value:
+        if str(doc[-1]) is value:
             obj = Artwork(
                 row[1],
                 row[2],
@@ -208,7 +208,7 @@ class Artwork:
     def print(self, db):
         artist = get_obj_artist(db, self.get_artist(), True)
 
-        print(OBJECT_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Name: " + self.get_name())
         print("Creation year: " + self.get_creation_year())
         print("Artist: " + artist.get_name())

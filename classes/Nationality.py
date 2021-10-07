@@ -126,5 +126,5 @@ class Nationality:
             self.set_message("The user does not have permission to delete records from " + TABLE_NAME + " table.")
 
     def print(self):
-        print(OBJECT_NAME.upper() + " DATA (" + self.get_id() + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Name: " + self.get_name())
