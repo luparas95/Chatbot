@@ -30,24 +30,11 @@ class DatabaseManager:
         self.__cursor = value
 
     # Methods
-    def execute(self, query, parameters, is_select=False):
+    def execute(self, mode, query, parameters=''):
         self.get_cursor().execute(query, parameters)
-
-        if is_select:
+        if mode == 1:
             return self.get_cursor().fetchone()
-        else:
-            self.commit()
-
-    def get_nb_rows(self, query):
-        self.get_cursor().execute(query)
-        return self.get_cursor().fetchone()
-
-    def get_all_rows(self, query):
-        self.get_cursor().execute(query)
-        return self.get_cursor().fetchall()
-
-    def commit(self):
-        self.get_db().commit()
-
-    def close_conn(self):
-        self.get_db().close()
+        elif mode == 2:
+            return self.get_cursor().fetchall()
+        elif mode == 3:
+            self.get_db().commit()

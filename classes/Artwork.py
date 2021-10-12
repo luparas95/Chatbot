@@ -11,9 +11,9 @@ FIELD_MAX_SIZE = {
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM Artwork WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Artwork WHERE Id = ?', (value,))
     else:
-        data = db.execute('SELECT * FROM Artwork WHERE Name = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Artwork WHERE Name LIKE ?', ('%' + value + '%',))
 
     if data is None:
         return None
@@ -29,11 +29,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM Artwork')
+    return db.execute(1, 'SELECT COUNT(*) FROM Artwork')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM Artwork')
+    return db.execute(2, 'SELECT * FROM Artwork')
 
 
 def get_name_list(db, nlp):
@@ -45,24 +45,6 @@ def get_name_list(db, nlp):
         names.append(str(doc[-1]))
 
     return names
-
-
-def srch_by_name(db, nlp, value):
-    rows = get_all_rows(db)
-    obj = None
-
-    for row in rows:
-        doc = nlp(row[1].lower())
-        if str(doc[-1]) is value:
-            obj = Artwork(
-                row[1],
-                row[2],
-                row[3],
-            )
-            obj.set_id(row[0])
-            break
-
-    return obj
 
 
 def valid_year(date):
@@ -151,7 +133,7 @@ class Artwork:
         artwork = get_obj(db, self.get_id(), True)
         if not artwork.__exist(db) or (artwork.__exist(db) and artwork.get_name() != self.get_name()):
             self.__validate_name()
-            if self.__exist(db):
+            if get_obj(db, self.get_name()) is not None:
                 self.__append_message("Name already exist.\n")
         self.__validate_creation_year()
         self.__validate_artist(db)
@@ -171,7 +153,7 @@ class Artwork:
                     self.get_artist(),
                 ]
                 db.execute(
-                    'INSERT INTO Artwork VALUES (NULL, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO Artwork VALUES (NULL, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
                 self.set_message(OBJECT_NAME + " inserted.")
@@ -186,11 +168,13 @@ class Artwork:
                     self.get_creation_year(),
                     self.get_artist(),
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE Artwork SET 
                     Name = ?, CreationYear = ?, ArtistId = ?, UpdateUserId = ?, UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
                 self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
@@ -198,7 +182,7 @@ class Artwork:
     def delete(self, db, user):
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
             if self.__exist(db):
-                db.execute('DELETE FROM Artwork WHERE Id = ?', self.get_id())
+                db.execute(3, 'DELETE FROM Artwork WHERE Id = ?', self.get_id())
                 self.set_message(OBJECT_NAME + " deleted.")
             else:
                 self.set_message(OBJECT_NAME + " not exist.")

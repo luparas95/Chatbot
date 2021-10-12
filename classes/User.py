@@ -13,9 +13,9 @@ FIELD_MAX_SIZE = {
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM User WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM User WHERE Id = ?', (value,))
     else:
-        data = db.execute('SELECT * FROM User WHERE Nick = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM User WHERE Nick = ?', (value,))
 
     if data is None:
         return None
@@ -33,11 +33,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM User')
+    return db.execute(1, 'SELECT COUNT(*) FROM User')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM User')
+    return db.execute(2, 'SELECT * FROM User')
 
 
 class User:
@@ -146,8 +146,8 @@ class User:
         user = get_obj(db, self.get_id(), True)
         if not user.__exist(db) or (user.__exist(db) and user.get_nick() != self.get_nick()):
             self.__validate_nick()
-            if self.__exist(db):
-                self.__append_message("Nick already exist.\n")
+            if get_obj(db, self.get_nick(), True) is not None:
+                self.__append_message(OBJECT_NAME + " already exist.\n")
         self.__validate_password()
         self.__validate_name()
         self.__validate_last_name()
@@ -170,7 +170,7 @@ class User:
                     self.get_role()
                 ]
                 db.execute(
-                    'INSERT INTO User VALUES (NULL, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO User VALUES (NULL, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
                 self.set_message(OBJECT_NAME + " inserted.")
@@ -187,12 +187,14 @@ class User:
                     self.get_last_name(),
                     self.get_role()
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE User SET 
                     Nick = ?, Password = ?, Name = ?, LastName = ?, RoleId = ?, UpdateUserId = ?, 
                     UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
                 self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
@@ -201,7 +203,7 @@ class User:
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
             if user.get_id() is not self.get_id():
                 if self.__exist(db):
-                    db.execute('DELETE FROM User WHERE Id = ?', self.get_id())
+                    db.execute(3, 'DELETE FROM User WHERE Id = ?', self.get_id())
                     self.set_message(OBJECT_NAME + " deleted.")
                 else:
                     self.set_message(OBJECT_NAME + " not exist.")

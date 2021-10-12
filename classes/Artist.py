@@ -12,9 +12,9 @@ FIELD_MAX_SIZE = {
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM Artist WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Artist WHERE Id = ?', (value,))
     else:
-        data = db.execute('SELECT * FROM Artist WHERE LastName = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Artist WHERE LastName LIKE ?', ('%' + value + '%',))
 
     if data is None:
         return None
@@ -32,11 +32,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM Artist')
+    return db.execute(1, 'SELECT COUNT(*) FROM Artist')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM Artist')
+    return db.execute(2, 'SELECT * FROM Artist')
 
 
 def get_name_list(db, nlp):
@@ -63,26 +63,6 @@ def get_last_name_list(db, nlp):
         last_names.append(str(doc[-1]))
 
     return last_names
-
-
-def srch_by_last_name(db, nlp, value):
-    rows = get_all_rows(db)
-    obj = None
-
-    for row in rows:
-        doc = nlp(row[2].lower())
-        if str(doc[-1]) is value:
-            obj = Artist(
-                row[1],
-                row[2],
-                row[3],
-                row[4],
-                row[5],
-            )
-            obj.set_id(row[0])
-            break
-
-    return obj
 
 
 def valid_date(date):
@@ -197,10 +177,10 @@ class Artist:
         self.set_message('')
         artist = get_obj(db, self.get_id(), True)
         if not artist.__exist(db) or (artist.__exist(db) and artist.get_last_name() != self.get_last_name()):
-            self.__validate_name()
             self.__validate_last_name()
-            if self.__exist(db):
+            if get_obj(db, self.get_last_name()) is not None:
                 self.__append_message(OBJECT_NAME + " already exist.\n")
+        self.__validate_name()
         self.__validate_born_date()
         self.__validate_death_date()
         self.__validate_nationality(db)
@@ -222,7 +202,7 @@ class Artist:
                     self.get_nationality(),
                 ]
                 db.execute(
-                    'INSERT INTO Artist VALUES (NULL, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO Artist VALUES (NULL, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
                 self.set_message(OBJECT_NAME + " inserted.")
@@ -239,12 +219,14 @@ class Artist:
                     self.get_death_date(),
                     self.get_nationality(),
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE Artist SET 
                     Name = ?, LastName = ?, BornDate = ?, DeathDate = ?, NationalityId = ?, UpdateUserId = ?, 
                     UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
                 self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
@@ -252,7 +234,7 @@ class Artist:
     def delete(self, db, user):
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
             if self.__exist(db):
-                db.execute('DELETE FROM Artist WHERE Id = ?', self.get_id())
+                db.execute(3, 'DELETE FROM Artist WHERE Id = ?', self.get_id())
                 self.set_message(OBJECT_NAME + " deleted.")
             else:
                 self.set_message(OBJECT_NAME + " not exist.")

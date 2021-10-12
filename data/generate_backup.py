@@ -56,6 +56,16 @@ def unload_artwork_info(cursor):
     return cursor.fetchall()
 
 
+def unload_place(cursor):
+    cursor.execute('SELECT * FROM Place')
+    return cursor.fetchall()
+
+
+def unload_place_name(cursor):
+    cursor.execute('SELECT * FROM PlaceName')
+    return cursor.fetchall()
+
+
 def unload_parameter(cursor):
     cursor.execute('SELECT * FROM "Parameter"')
     return cursor.fetchall()
@@ -76,6 +86,8 @@ def create_json():
         "Language": unload_language(cursor),
         "ArtistInfo": unload_artist_info(cursor),
         "ArtworkInfo": unload_artwork_info(cursor),
+        "Place": unload_place(cursor),
+        "PlaceName": unload_place_name(cursor),
         "Parameter": unload_parameter(cursor),
     }
 

@@ -2,7 +2,7 @@ from classes.RolePermission import get_obj as get_obj_role_permission
 from classes.Artwork import get_obj as get_obj_artwork
 from classes.Language import get_obj as get_obj_language
 
-OBJET_NAME = "Artwork info"
+OBJECT_NAME = "Artwork info"
 TABLE_NAME = "ArtworkInfo"
 FIELD_MAX_SIZE = {
     "Description": 500,
@@ -11,11 +11,9 @@ FIELD_MAX_SIZE = {
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM ArtworkInfo WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM ArtworkInfo WHERE Id = ?', (value,))
     else:
-        data = db.execute(
-            'SELECT * FROM ArtworkInfo WHERE ArtworkId = ? AND LanguageId = ?', (value[0], value[1]), True
-        )
+        data = db.execute(1, 'SELECT * FROM ArtworkInfo WHERE ArtworkId = ? AND LanguageId = ?', (value[0], value[1]))
 
     if data is None:
         return None
@@ -31,11 +29,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM ArtistInfo')
+    return db.execute(1, 'SELECT COUNT(*) FROM ArtistInfo')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM ArtistInfo')
+    return db.execute(2, 'SELECT * FROM ArtistInfo')
 
 
 class ArtworkInfo:
@@ -122,12 +120,12 @@ class ArtworkInfo:
                                              artwork_info.get_language() != self.get_language())):
             self.__validate_artwork(db)
             self.__validate_language(db)
-            if self.__exist(db):
-                self.__append_message(OBJET_NAME + " already exist.\n")
+            if get_obj(db, (self.get_artwork(), self.get_language())) is not None:
+                self.__append_message(OBJECT_NAME + " already exist.\n")
         self.__validate_description()
 
         if self.get_message() == '':
-            self.set_message(OBJET_NAME + " valid.")
+            self.set_message(OBJECT_NAME + " valid.")
             return True
 
         return False
@@ -141,10 +139,10 @@ class ArtworkInfo:
                     self.get_description(),
                 ]
                 db.execute(
-                    'INSERT INTO ArtistInfo VALUES (NULL, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO ArtistInfo VALUES (NULL, ?, ?, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
-                self.set_message(OBJET_NAME + " inserted.")
+                self.set_message(OBJECT_NAME + " inserted.")
         else:
             self.set_message("The user does not have permission to insert records into " + TABLE_NAME + " table.")
 
@@ -156,22 +154,24 @@ class ArtworkInfo:
                     self.get_language(),
                     self.get_description(),
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE ArtistInfo SET 
                     ArtworkId = ?, LanguageId = ?, Description = ?, UpdateUserId = ?, UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
-                self.set_message(OBJET_NAME + " updated.")
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
+                self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
 
     def delete(self, db, user):
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
             if self.__exist(db):
-                db.execute('DELETE FROM ArtistInfo WHERE Id = ?', self.get_id())
-                self.set_message(OBJET_NAME + " deleted.")
+                db.execute(3, 'DELETE FROM ArtistInfo WHERE Id = ?', self.get_id())
+                self.set_message(OBJECT_NAME + " deleted.")
             else:
-                self.set_message(OBJET_NAME + " not exist.")
+                self.set_message(OBJECT_NAME + " not exist.")
         else:
             self.set_message("The user does not have permission to delete records from " + TABLE_NAME + " table.")
 
@@ -179,7 +179,7 @@ class ArtworkInfo:
         artwork = get_obj_artwork(db, self.get_artwork(), True)
         language = get_obj_language(db, self.get_language(), True)
 
-        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Artwork: " + artwork.get_name())
         print("Language: " + language.get_name())
         print("Description: " + self.get_description())

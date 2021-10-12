@@ -1,18 +1,16 @@
 from classes.Role import get_obj as get_obj_role
 from classes.Permission import get_obj as get_obj_permission
 
-OBJET_NAME = "Role permission"
+OBJECT_NAME = "Role permission"
 TABLE_NAME = "RolePermission"
 FIELD_MAX_SIZE = {}
 
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM RolePermission WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM RolePermission WHERE Id = ?', (value,))
     else:
-        data = db.execute(
-            'SELECT * FROM RolePermission WHERE RoleId = ? AND PermissionId = ?', (value[0], value[1]), True
-        )
+        data = db.execute(1, 'SELECT * FROM RolePermission WHERE RoleId = ? AND PermissionId = ?', (value[0], value[1]))
 
     if data is None:
         return None
@@ -27,11 +25,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM RolePermission')
+    return db.execute(1, 'SELECT COUNT(*) FROM RolePermission')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM RolePermission')
+    return db.execute(2, 'SELECT * FROM RolePermission')
 
 
 class RolePermission:
@@ -105,11 +103,11 @@ class RolePermission:
                                                 role_permission.get_permission() != self.get_permission())):
             self.__validate_role(db)
             self.__validate_permission(db)
-            if self.__exist(db):
-                self.__append_message(OBJET_NAME + " already exist.\n")
+            if get_obj(db, (self.get_role(), self.get_permission())) is not None:
+                self.__append_message(OBJECT_NAME + " already exist.\n")
 
         if self.get_message() == '':
-            self.set_message(OBJET_NAME + " valid.")
+            self.set_message(OBJECT_NAME + " valid.")
             return True
 
         return False
@@ -122,10 +120,10 @@ class RolePermission:
                     self.get_permission(),
                 ]
                 db.execute(
-                    'INSERT INTO RolePermission VALUES (NULL, ?, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO RolePermission VALUES (NULL, ?, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
-                self.set_message(OBJET_NAME + " inserted.")
+                self.set_message(OBJECT_NAME + " inserted.")
         else:
             self.set_message("The user does not have permission to insert records into " + TABLE_NAME + " table.")
 
@@ -136,22 +134,24 @@ class RolePermission:
                     self.get_role(),
                     self.get_permission(),
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE RolePermission SET 
                     RoleId = ?, PermissionId = ? , UpdateUserId = ?, UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
-                self.set_message(OBJET_NAME + " updated.")
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
+                self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
 
     def delete(self, db, user):
         if get_obj(db, [user.get_role, "Delete"]) is not None:
             if self.__exist(db):
-                db.execute('DELETE FROM RolePermission WHERE Id = ?', self.get_id())
-                self.set_message(OBJET_NAME + " deleted.")
+                db.execute(3, 'DELETE FROM RolePermission WHERE Id = ?', self.get_id())
+                self.set_message(OBJECT_NAME + " deleted.")
             else:
-                self.set_message(OBJET_NAME + " not exist.")
+                self.set_message(OBJECT_NAME + " not exist.")
         else:
             self.set_message("The user does not have permission to delete records from " + TABLE_NAME + " table.")
 
@@ -159,6 +159,6 @@ class RolePermission:
         role = get_obj_role(db, self.get_role(), True)
         permission = get_obj_permission(db, self.get_permission(), True)
 
-        print(OBJET_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
+        print(OBJECT_NAME.upper() + " DATA (" + str(self.get_id()) + ")")
         print("Role: " + role.get_name())
         print("Permission: " + permission.get_name())

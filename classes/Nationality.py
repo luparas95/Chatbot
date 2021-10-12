@@ -9,9 +9,9 @@ FIELD_MAX_SIZE = {
 
 def get_obj(db, value, by_id=False):
     if by_id:
-        data = db.execute('SELECT * FROM Nationality WHERE Id = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Nationality WHERE Id = ?', (value,))
     else:
-        data = db.execute('SELECT * FROM Nationality WHERE Name = ?', (value,), True)
+        data = db.execute(1, 'SELECT * FROM Nationality WHERE Name = ?', (value,))
 
     if data is None:
         return None
@@ -25,11 +25,11 @@ def get_obj(db, value, by_id=False):
 
 
 def get_nb_rows(db):
-    return db.get_nb_rows('SELECT COUNT(*) FROM Nationality')
+    return db.execute(1, 'SELECT COUNT(*) FROM Nationality')
 
 
 def get_all_rows(db):
-    return db.get_all_rows('SELECT * FROM Nationality')
+    return db.execute(2, 'SELECT * FROM Nationality')
 
 
 class Nationality:
@@ -77,8 +77,8 @@ class Nationality:
         role = get_obj(db, self.get_id(), True)
         if not role.__exist(db) or (role.__exist(db) and role.get_name() != self.get_name()):
             self.__validate_name()
-            if self.__exist(db):
-                self.__append_message("Name already exist.\n")
+            if get_obj(db, self.get_name(), True) is not None:
+                self.__append_message(OBJECT_NAME + " already exist.\n")
 
         if self.get_message() == '':
             self.set_message(OBJECT_NAME + " valid.")
@@ -93,7 +93,7 @@ class Nationality:
                     self.get_name(),
                 ]
                 db.execute(
-                    'INSERT INTO Nationality VALUES (NULL, ?, ?, current_timestamp, ?, current_timestamp)',
+                    3, 'INSERT INTO Nationality VALUES (NULL, ?, ?, current_timestamp, ?, current_timestamp)',
                     (data, user.get_id(), user.get_id(),)
                 )
                 self.set_message(OBJECT_NAME + " inserted.")
@@ -106,11 +106,13 @@ class Nationality:
                 data = [
                     self.get_name(),
                 ]
-                db.execute('''
+                db.execute(
+                    3, '''
                     UPDATE Nationality SET 
                     Name = ?, UpdateUserId = ?, UpdateDate = current_timestamp 
                     WHERE Id = ?
-                ''', (data, user.get_id(), self.get_id(),))
+                    ''', (data, user.get_id(), self.get_id(),)
+                )
                 self.set_message(OBJECT_NAME + " updated.")
         else:
             self.set_message("The user does not have permission to update records from " + TABLE_NAME + " table.")
@@ -118,7 +120,7 @@ class Nationality:
     def delete(self, db, user):
         if get_obj_role_permission(db, [user.get_role, "Delete"]) is not None:
             if self.__exist(db):
-                db.execute('DELETE FROM Nationality WHERE Id = ?', self.get_id())
+                db.execute(3, 'DELETE FROM Nationality WHERE Id = ?', self.get_id())
                 self.set_message(OBJECT_NAME + " deleted.")
             else:
                 self.set_message(OBJECT_NAME + " not exist.")

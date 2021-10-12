@@ -200,11 +200,50 @@ def generate_artwork_info(cursor):
     ''')
 
 
+def generate_place(cursor):
+    cursor.execute('DROP TABLE IF EXISTS Place')
+
+    cursor.execute('''
+        CREATE TABLE Place(
+        Id INTEGER PRIMARY KEY,
+        XCoordinate INTEGER NOT NULL,
+        YCoordinate INTEGER NOT NULL,
+        InsertUserId INTEGER NOT NULL,
+        InsertDate DATETIME NOT NULL,
+        UpdateUserId INTEGER NOT NULL,
+        UpdateDate DATETIME NOT NULL,
+        UNIQUE (XCoordinate, YCoordinate),
+        FOREIGN KEY (InsertUserId) REFERENCES "User"(Id) ON DELETE CASCADE,
+        FOREIGN KEY (UpdateUserId) REFERENCES "User"(Id) ON DELETE CASCADE)
+    ''')
+
+
+def generate_place_name(cursor):
+    cursor.execute('DROP TABLE IF EXISTS PlaceName')
+
+    cursor.execute('''
+        CREATE TABLE PlaceName(
+        Id INTEGER PRIMARY KEY,
+        PlaceId INTEGER NOT NULL,
+        LanguageId INTEGER NOT NULL,
+        "Name" VARCHAR(30) NOT NULL,
+        InsertUserId INTEGER NOT NULL,
+        InsertDate DATETIME NOT NULL,
+        UpdateUserId INTEGER NOT NULL,
+        UpdateDate DATETIME NOT NULL,
+        UNIQUE (LanguageId, "Name"),
+        FOREIGN KEY (PlaceId) REFERENCES Place(Id) ON DELETE CASCADE,
+        FOREIGN KEY (LanguageId) REFERENCES Language(Id) ON DELETE CASCADE,
+        FOREIGN KEY (InsertUserId) REFERENCES "User"(Id) ON DELETE CASCADE,
+        FOREIGN KEY (UpdateUserId) REFERENCES "User"(Id) ON DELETE CASCADE)
+    ''')
+
+
 def generate_parameter(cursor):
     cursor.execute('DROP TABLE IF EXISTS "Parameter"')
 
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS "Parameter"(
+        CREATE TABLE "Parameter"(
         Id INTEGER PRIMARY KEY,
         "Key" VARCHAR(30) NOT NULL,
         "Value" VARCHAR(500) NOT NULL,
@@ -309,6 +348,24 @@ def insert_artwork_info(cursor, data):
     print("Inserted " + str(len(data)) + " new elements in ArtworkInfo table.")
 
 
+def insert_place(cursor, data):
+    cursor.executemany('''
+        INSERT INTO Place
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', data)
+
+    print("Inserted " + str(len(data)) + " new elements in Place table.")
+
+
+def insert_place_name(cursor, data):
+    cursor.executemany('''
+        INSERT INTO PlaceName
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', data)
+
+    print("Inserted " + str(len(data)) + " new elements in PlaceName table.")
+
+
 def insert_parameter(cursor, data):
     cursor.executemany('''
         INSERT INTO "Parameter"
@@ -329,6 +386,8 @@ def generate_tables(cursor):
     generate_language(cursor)
     generate_artist_info(cursor)
     generate_artwork_info(cursor)
+    generate_place(cursor)
+    generate_place_name(cursor)
     generate_parameter(cursor)
 
 
@@ -343,6 +402,8 @@ def insert_registers(cursor, data):
     insert_language(cursor, data["Language"])
     insert_artist_info(cursor, data["ArtistInfo"])
     insert_artwork_info(cursor, data["ArtworkInfo"])
+    insert_place(cursor, data["Place"])
+    insert_place_name(cursor, data["PlaceName"])
     insert_parameter(cursor, data["Parameter"])
 
 
